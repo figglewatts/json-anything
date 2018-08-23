@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -40,8 +41,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\Graphics\GLBuffer.cs" />
+    <Compile Include="src\Graphics\IBindable.cs" />
+    <Compile Include="src\Graphics\IDisposable.cs" />
+    <Compile Include="src\GUI\ImGuiRenderer.cs" />
     <Compile Include="src\MainWindow.cs" />
     <Compile Include="src\Program.cs" />
+    <Compile Include="src\Util\Logger.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ImGui.NET, Version=0.4.7.0, Culture=neutral, processorArchitecture=MSIL">
