@@ -44,6 +44,9 @@
     <Compile Include="src\Graphics\GLBuffer.cs" />
     <Compile Include="src\Graphics\IBindable.cs" />
     <Compile Include="src\Graphics\IDisposable.cs" />
+    <Compile Include="src\GUI\GUIComponents\ApplicationArea.cs" />
+    <Compile Include="src\GUI\GUIComponents\IImGuiComponent.cs" />
+    <Compile Include="src\GUI\GUIComponents\MainMenuBar.cs" />
     <Compile Include="src\GUI\ImGuiRenderer.cs" />
     <Compile Include="src\MainWindow.cs" />
     <Compile Include="src\Program.cs" />

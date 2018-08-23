@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ImGuiNET;
 using JsonAnything.GUI;
+using JsonAnything.GUI.GUIComponents;
 using JsonAnything.Util;
 using OpenTK;
 using OpenTK.Graphics;
@@ -21,7 +22,7 @@ namespace JsonAnything
         private const int GL_MAJOR_VERSION = 4;
         private const int GL_MINOR_VERSION = 0;
 
-        private bool opened = true;
+        private List<IImGuiComponent> _guiComponents;
         
         public MainWindow()
             : base(WINDOW_WIDTH, WINDOW_HEIGHT,
@@ -32,6 +33,10 @@ namespace JsonAnything
                 GL_MAJOR_VERSION, GL_MINOR_VERSION,
                 GraphicsContextFlags.Default)
         {
+            _guiComponents = new List<IImGuiComponent>();
+
+            _guiComponents.Add(new MainMenuBar());
+            _guiComponents.Add(new ApplicationArea());
         }
 
         protected override void OnResize(EventArgs e)
@@ -71,11 +76,12 @@ namespace JsonAnything
 
             ImGuiRenderer.BeginFrame(e.Time);
 
-            ImGuiNative.igShowDemoWindow(ref opened);
+            foreach (var component in _guiComponents)
+            {
+                component.Render();
+            }
 
             ImGuiRenderer.EndFrame();
-            
-            // draw stuff
 
             SwapBuffers();
         }
