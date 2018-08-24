@@ -1,0 +1,18 @@
+{
+	"Name": "Testing serialization!!",
+	"Number": 3.141,
+	"Strings": ["test 1", "test 2", "test 3"],
+	"AThing": null,
+	"IntegerValue": 3,
+	"Object": {
+		"Boolean": true,
+		"Array": [
+			{
+				"test": null
+			},
+			{
+				"another one": "oh no!!"
+			}
+		]
+	}
+}
