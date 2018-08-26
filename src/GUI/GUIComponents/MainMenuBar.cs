@@ -9,6 +9,15 @@ namespace JsonAnything.GUI.GUIComponents
 {
     public class MainMenuBar : IImGuiComponent
     {
+        private FileDialog _openDialog;
+
+        private bool _openFileOpenDialog = false;
+
+        public MainMenuBar()
+        {
+            _openDialog = new FileDialog("", FileDialog.DialogType.Open);
+        }
+        
         public void Render()
         {
             if (ImGui.BeginMainMenuBar())
@@ -32,13 +41,24 @@ namespace JsonAnything.GUI.GUIComponents
                 }
             }
             ImGui.EndMainMenuBar();
+
+            if (_openFileOpenDialog)
+            {
+                _openDialog.Show();
+                _openFileOpenDialog = false;
+            }
+
+            _openDialog.Render();
         }
 
         private void renderFileMenu()
         {
             if (ImGui.MenuItem("New", "Ctrl+N")) {}
 
-            if (ImGui.MenuItem("Open", "Ctrl+O")) {}
+            if (ImGui.MenuItem("Open", "Ctrl+O"))
+            {
+                _openFileOpenDialog = true;
+            }
 
             if (ImGui.BeginMenu("Open Recent"))
             {

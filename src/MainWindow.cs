@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IconFonts;
 using ImGuiNET;
 using JsonAnything.GUI;
 using JsonAnything.GUI.GUIComponents;
@@ -33,6 +34,8 @@ namespace JsonAnything
                 GL_MAJOR_VERSION, GL_MINOR_VERSION,
                 GraphicsContextFlags.Default)
         {
+            ImGuiRenderer.Init();
+            
             _guiComponents = new List<IImGuiComponent>();
 
             _guiComponents.Add(new MainMenuBar());
@@ -52,7 +55,17 @@ namespace JsonAnything
 
             Logger.Log()(LogLevel.INFO, "Initialized JsonAnything");
 
-            ImGuiRenderer.Init();
+            IO io = ImGui.GetIO();
+
+            ImGui.GetIO().FontAtlas.AddDefaultFont();
+
+            FontConfig cfg = new FontConfig
+            {
+                MergeMode = 1,
+                PixelSnapH = 1
+            };
+            ImGuiRenderer.AddFontFromFileTTF("fonts/fa-solid-900.ttf", 16, cfg,
+                new[] {(char)FontAwesome5.IconMin, (char)FontAwesome5.IconMax, (char)0});
         }
 
         protected override void OnUnload(EventArgs e)
@@ -80,6 +93,9 @@ namespace JsonAnything
             {
                 component.Render();
             }
+
+            bool opened = true;
+            ImGuiNative.igShowDemoWindow(ref opened);
 
             ImGuiRenderer.EndFrame();
 

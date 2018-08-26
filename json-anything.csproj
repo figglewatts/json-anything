@@ -41,10 +41,12 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="deps\IconsFontAwesome5.cs" />
     <Compile Include="src\Graphics\GLBuffer.cs" />
     <Compile Include="src\Graphics\IBindable.cs" />
     <Compile Include="src\Graphics\IDisposable.cs" />
     <Compile Include="src\GUI\GUIComponents\ApplicationArea.cs" />
+    <Compile Include="src\GUI\GUIComponents\FileDialog.cs" />
     <Compile Include="src\GUI\GUIComponents\IImGuiComponent.cs" />
     <Compile Include="src\GUI\GUIComponents\JsonTree.cs" />
     <Compile Include="src\GUI\GUIComponents\MainMenuBar.cs" />
@@ -60,7 +62,8 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ImGui.NET, Version=0.4.7.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\ImGui.NET.0.4.7\lib\netstandard1.1\ImGui.NET.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ImGui.NET-fork\bin\Debug\ImGui.NET\netstandard1.1\ImGui.NET.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -82,4 +85,7 @@
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>XCOPY "$(SolutionDir)fonts" "$(TargetDir)fonts" /S /I /Y</PreBuildEvent>
+  </PropertyGroup>
 </Project>

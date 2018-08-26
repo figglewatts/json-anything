@@ -67,8 +67,6 @@ namespace JsonAnything.GUI
             io.KeyMap[GuiKey.Y] = (int)Key.Y;
             io.KeyMap[GuiKey.Z] = (int)Key.Z;
 
-            io.FontAtlas.AddDefaultFont();
-
             io.DisplayFramebufferScale = Vector2.One;
         }
 
@@ -113,6 +111,26 @@ namespace JsonAnything.GUI
         public static void Resize(int w, int h)
         {
             ImGui.GetIO().DisplaySize = new Vector2(w, h);
+        }
+
+        public static void AddFontFromFileTTF(string filename, float sizePixels, FontConfig config, char[] glyphRanges)
+        {
+            IO io = ImGui.GetIO();
+            config.OversampleH = 1;
+            config.OversampleV = 1;
+            config.RasterizerMultiply = 1;
+            IntPtr cnfPtr = Marshal.AllocHGlobal(Marshal.SizeOf<FontConfig>());
+            Marshal.StructureToPtr(config, cnfPtr, false);
+            
+            unsafe
+            {
+                NativeFontAtlas* atlas = io.GetNativePointer()->FontAtlas;
+                fixed (char* glyphs = &glyphRanges[0])
+                {
+                    ImGuiNative.ImFontAtlas_AddFontFromFileTTF(atlas, filename, sizePixels, cnfPtr,
+                        glyphs);
+                }
+            }
         }
 
         private static void updateInput()

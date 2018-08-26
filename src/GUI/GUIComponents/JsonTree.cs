@@ -52,6 +52,7 @@ namespace JsonAnything.GUI.GUIComponents
                 ImGui.TreePop();
             }
 
+            ImGui.PopID();
             ImGui.PopItemWidth();
             ImGui.Columns(1, "columns", false);
             ImGui.Separator();

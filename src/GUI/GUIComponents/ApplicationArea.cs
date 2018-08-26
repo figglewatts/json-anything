@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using IconFonts;
 using ImGuiNET;
 
 namespace JsonAnything.GUI.GUIComponents
@@ -26,7 +27,8 @@ namespace JsonAnything.GUI.GUIComponents
             if (ImGui.BeginWindow("",
                 WindowFlags.NoMove | WindowFlags.NoResize | WindowFlags.NoCollapse | WindowFlags.NoSavedSettings |
                 WindowFlags.NoTitleBar | WindowFlags.NoBringToFrontOnFocus))
-            {
+            {                
+                ImGui.Text("\uf200" + "test");
                 _jsonTree.Render();
                 ImGui.EndWindow();
             }

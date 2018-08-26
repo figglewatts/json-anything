@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace JsonAnything.Util
@@ -12,18 +13,31 @@ namespace JsonAnything.Util
             bool state;
             byte[] textArray = new byte[maxLength];
             Encoding.Default.GetBytes(text, 0, text.Length, textArray, 0);
-
+            byte[] labelArray = Encoding.UTF8.GetBytes(label);
             unsafe
             {
                 fixed (byte* txtPtr = textArray)
                 {
-                    state = ImGuiNative.igInputText(label, new IntPtr(txtPtr), maxLength, flags, callback,
+                    state = ImGuiNative.igInputText(labelArray, new IntPtr(txtPtr), maxLength, flags, callback,
                         IntPtr.Zero.ToPointer());
                 }
             }
 
-            text = System.Text.Encoding.Default.GetString(textArray);
+            text = System.Text.Encoding.Default.GetString(textArray).TrimEnd('\0');
             return state;
+        }
+
+        public static unsafe Font AddFontFromFileTTF(this FontAtlas atlas, string fileName, float pixelSize, FontConfig config, char[] glyphRanges)
+        {
+            NativeFontAtlas* atlasPtr = ImGui.GetIO().GetNativePointer()->FontAtlas;
+            IntPtr cfgPtr = Marshal.AllocHGlobal(Marshal.SizeOf(config));
+            Marshal.StructureToPtr(config, cfgPtr, false);
+            fixed (char* glyphPtr = &glyphRanges[0])
+            {
+                NativeFont* fontPtr =
+                    ImGuiNative.ImFontAtlas_AddFontFromFileTTF(atlasPtr, fileName, pixelSize, cfgPtr, glyphPtr);
+                return new Font(fontPtr);
+            }
         }
     }
 }
