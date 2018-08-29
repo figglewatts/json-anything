@@ -27,8 +27,8 @@ namespace JsonAnything.GUI.GUIComponents
         private int _selectedFile = -1;
         private string _bottomBarText = "";
         private readonly Vector2 _dialogStartSize = new Vector2(400, 300);
-        private List<string> _directoriesInCurrentDir;
-        private List<string> _filesInCurrentDir;
+        private readonly List<string> _directoriesInCurrentDir;
+        private readonly List<string> _filesInCurrentDir;
 
         public FileDialog(string dir, DialogType type)
         {
@@ -78,7 +78,7 @@ namespace JsonAnything.GUI.GUIComponents
 
         }
 
-        private void refreshFileList()
+        private void invalidateFileList()
         {
             _selectedFile = -1;
             updateDirectoriesInCurrentDir();
@@ -89,7 +89,7 @@ namespace JsonAnything.GUI.GUIComponents
         {
             DirectoryInfo parentDir = Directory.GetParent(_currentDir);
             _currentDir = parentDir?.ToString() ?? _currentDir;
-            refreshFileList();
+            invalidateFileList();
         }
 
         private void updateDirectoriesInCurrentDir()
@@ -118,6 +118,8 @@ namespace JsonAnything.GUI.GUIComponents
             }
         }
 
+        private bool indexInFilesListIsDirectory(int i) { return i < _directoriesInCurrentDir.Count; }
+
         private void renderTopBar()
         {
             Vector2 pos = ImGui.GetCursorScreenPos();
@@ -137,7 +139,7 @@ namespace JsonAnything.GUI.GUIComponents
 
             if (modified)
             {
-                refreshFileList();
+                invalidateFileList();
             }
         }
 
@@ -160,9 +162,18 @@ namespace JsonAnything.GUI.GUIComponents
                 foreach (string dir in _directoriesInCurrentDir)
                 {
                     ImGui.PushID(i);
-                    if (ImGui.Selectable($"{FontAwesome5.Folder} {dir}", _selectedFile == i))
+                    if (ImGui.Selectable($"{FontAwesome5.Folder} {dir}", _selectedFile == i, SelectableFlags.AllowDoubleClick))
                     {
                         _selectedFile = i;
+                        _bottomBarText = dir;
+
+                        if (ImGui.IsMouseDoubleClicked(0))
+                        {
+                            _currentDir = Path.Combine(_currentDir, dir);
+                            invalidateFileList();
+                            ImGui.PopID();
+                            break;
+                        }
                     }
                     ImGui.PopID();
                     i++;
@@ -171,9 +182,17 @@ namespace JsonAnything.GUI.GUIComponents
                 foreach (string file in _filesInCurrentDir)
                 {
                     ImGui.PushID(i);
-                    if (ImGui.Selectable($"{FontAwesome5.File} {file}", _selectedFile == i))
+                    if (ImGui.Selectable($"{FontAwesome5.File} {file}", _selectedFile == i, SelectableFlags.AllowDoubleClick))
                     {
                         _selectedFile = i;
+                        _bottomBarText = file;
+
+                        if (ImGui.IsMouseDoubleClicked(0))
+                        {
+                            // TODO: open file
+                            ImGui.PopID();
+                            break;
+                        }
                     }
                     ImGui.PopID();
                     i++;
