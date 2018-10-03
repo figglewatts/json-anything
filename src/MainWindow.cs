@@ -38,8 +38,10 @@ namespace JsonAnything
             
             _guiComponents = new List<IImGuiComponent>();
 
-            _guiComponents.Add(new MainMenuBar());
-            _guiComponents.Add(new ApplicationArea());
+            ApplicationArea applicationArea = new ApplicationArea();
+
+            _guiComponents.Add(new MainMenuBar(applicationArea.JsonTree));
+            _guiComponents.Add(applicationArea);
         }
 
         protected override void OnResize(EventArgs e)
@@ -93,9 +95,6 @@ namespace JsonAnything
             {
                 component.Render();
             }
-
-            bool opened = true;
-            ImGuiNative.igShowDemoWindow(ref opened);
 
             ImGuiRenderer.EndFrame();
 

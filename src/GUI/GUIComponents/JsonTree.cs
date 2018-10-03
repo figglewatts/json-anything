@@ -18,13 +18,17 @@ namespace JsonAnything.GUI.GUIComponents
         private Dictionary<string, JsonNode> _json;
         private JsonSerializer _jsonSerializer = new JsonSerializer();
         private bool _rootTreeOpen = true;
-        private string _jsonFileName = "../../test.json";
+        private string _jsonFileName = "";
 
         public JsonTree()
         {
             _jsonSerializer.Converters.Add(new JsonNodeConverter());
-            
-            using (StreamReader sr = new StreamReader(_jsonFileName))
+        }
+
+        public void LoadJson(string filePath)
+        {
+            _jsonFileName = filePath;
+            using (StreamReader sr = new StreamReader(filePath))
             using (JsonReader jr = new JsonTextReader(sr))
             {
                 _json = _jsonSerializer.Deserialize<Dictionary<string, JsonNode>>(jr);
@@ -33,6 +37,8 @@ namespace JsonAnything.GUI.GUIComponents
         
         public void Render()
         {
+            if (_json == null) return;
+            
             ImGui.Columns(2, "columns", true);
             ImGui.Separator();
             ImGui.PushID(_jsonFileName);

@@ -13,9 +13,9 @@ namespace JsonAnything.GUI.GUIComponents
     {
         private const int TITLEBAR_HEIGHT = 19;
 
-        private JsonTree _jsonTree = new JsonTree();
+        public readonly JsonTree JsonTree = new JsonTree();
 
-        private IO _io;
+        private readonly IO _io;
 
         public ApplicationArea() { _io = ImGui.GetIO(); }
         
@@ -28,8 +28,7 @@ namespace JsonAnything.GUI.GUIComponents
                 WindowFlags.NoMove | WindowFlags.NoResize | WindowFlags.NoCollapse | WindowFlags.NoSavedSettings |
                 WindowFlags.NoTitleBar | WindowFlags.NoBringToFrontOnFocus))
             {                
-                ImGui.Text("\uf200" + "test");
-                _jsonTree.Render();
+                JsonTree.Render();
                 ImGui.EndWindow();
             }
             ImGui.PopStyleVar();

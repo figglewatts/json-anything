@@ -22,6 +22,16 @@ namespace JsonAnything.GUI.GUIComponents
         public DialogType Type { get; }
         public string FilePath { get; private set; }
 
+        public string FileSearchPattern
+        {
+            set
+            {
+                _fileSearchPattern = value;
+                invalidateFileList();
+            }
+        }
+
+        private string _fileSearchPattern = "*";
         private bool _open = true;
         private string _currentDir;
         private int _selectedFile = -1;
@@ -29,6 +39,7 @@ namespace JsonAnything.GUI.GUIComponents
         private readonly Vector2 _dialogStartSize = new Vector2(400, 300);
         private readonly List<string> _directoriesInCurrentDir;
         private readonly List<string> _filesInCurrentDir;
+        private event Action<string> OnDialogAccept;
 
         public FileDialog(string dir, DialogType type)
         {
@@ -40,8 +51,11 @@ namespace JsonAnything.GUI.GUIComponents
             updateFilesInCurrentDir();
         }
 
-        public void Show()
+        public void Show(Action<string> onDialogAccept, string fileSearchPattern = "*")
         {
+            OnDialogAccept = onDialogAccept;
+            _fileSearchPattern = fileSearchPattern;
+            invalidateFileList();
             ImGui.OpenPopup("Open file...");
             _open = true;
         }
@@ -60,8 +74,6 @@ namespace JsonAnything.GUI.GUIComponents
 
         private void renderFileOpenDialog()
         {
-            // TODO: detect if closed
-            
             ImGui.SetNextWindowSize(_dialogStartSize, Condition.FirstUseEver);
             if (ImGui.BeginPopupModal("Open file...", ref _open))
             {
@@ -110,7 +122,7 @@ namespace JsonAnything.GUI.GUIComponents
             _filesInCurrentDir.Clear();
 
             if (!Directory.Exists(_currentDir)) return;
-            string[] files = Directory.GetFiles(_currentDir);
+            string[] files = Directory.GetFiles(_currentDir, _fileSearchPattern);
 
             foreach (string file in files)
             {
@@ -145,7 +157,8 @@ namespace JsonAnything.GUI.GUIComponents
 
         private void renderFileList()
         {
-            // TODO: not selectable if in save mode
+            // if the dialog is in save mode we can't select files
+            if (Type == DialogType.Save) _selectedFile = -1;
             
             ImGui.BeginChild("fileSelect", new Vector2(-1, -24), true, WindowFlags.Default);
             if (!Directory.Exists(_currentDir))
@@ -186,10 +199,11 @@ namespace JsonAnything.GUI.GUIComponents
                     {
                         _selectedFile = i;
                         _bottomBarText = file;
+                        FilePath = Path.Combine(_currentDir, file);
 
                         if (ImGui.IsMouseDoubleClicked(0))
                         {
-                            // TODO: open file
+                            dialogAccept();
                             ImGui.PopID();
                             break;
                         }
@@ -210,16 +224,32 @@ namespace JsonAnything.GUI.GUIComponents
             {
                 if (ImGui.Button("Open", new Vector2(48, 0)))
                 {
-                    // TODO: open file
+                    if (_selectedFile >= _directoriesInCurrentDir.Count)
+                    {
+                        // selected file was a file
+                        dialogAccept();
+                    }
+                    else
+                    {
+                        // it was a directory
+                        _currentDir = Path.Combine(_currentDir, _bottomBarText);
+                        invalidateFileList();
+                    }
                 }
             }
             else
             {
                 if (ImGui.Button("Save", new Vector2(48, 0)))
                 {
-                    // TODO: save file
+                    dialogAccept();
                 }
             }
+        }
+
+        private void dialogAccept()
+        {
+            OnDialogAccept(FilePath);
+            _open = false;
         }
     }
 }

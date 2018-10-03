@@ -10,12 +10,14 @@ namespace JsonAnything.GUI.GUIComponents
     public class MainMenuBar : IImGuiComponent
     {
         private FileDialog _openDialog;
+        private JsonTree _jsonTree;
 
         private bool _openFileOpenDialog = false;
 
-        public MainMenuBar()
+        public MainMenuBar(JsonTree jsonTree)
         {
             _openDialog = new FileDialog("", FileDialog.DialogType.Open);
+            _jsonTree = jsonTree;
         }
         
         public void Render()
@@ -44,7 +46,7 @@ namespace JsonAnything.GUI.GUIComponents
 
             if (_openFileOpenDialog)
             {
-                _openDialog.Show();
+                _openDialog.Show(fileName => _jsonTree.LoadJson(fileName), "*.json");
                 _openFileOpenDialog = false;
             }
 
