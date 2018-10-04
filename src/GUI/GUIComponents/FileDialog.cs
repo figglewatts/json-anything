@@ -31,6 +31,7 @@ namespace JsonAnything.GUI.GUIComponents
             }
         }
 
+        private string _fileSaveType = "";
         private string _fileSearchPattern = "*";
         private bool _open = true;
         private string _currentDir;
@@ -51,12 +52,14 @@ namespace JsonAnything.GUI.GUIComponents
             updateFilesInCurrentDir();
         }
 
-        public void Show(Action<string> onDialogAccept, string fileSearchPattern = "*")
+        public void Show(Action<string> onDialogAccept, string fileSearchPattern = "*", string fileSaveType = "")
         {
             OnDialogAccept = onDialogAccept;
             _fileSearchPattern = fileSearchPattern;
+            _fileSaveType = fileSaveType;
+            FilePath = "";
             invalidateFileList();
-            ImGui.OpenPopup("Open file...");
+            ImGui.OpenPopup(Type == DialogType.Open ? "Open file..." : "Save file...");
             _open = true;
         }
         
@@ -87,7 +90,15 @@ namespace JsonAnything.GUI.GUIComponents
 
         private void renderFileSaveDialog()
         {
-
+            ImGui.SetNextWindowSize(_dialogStartSize, Condition.FirstUseEver);
+            if (ImGui.BeginPopupModal("Save file...", ref _open))
+            {
+                renderTopBar();
+                renderFileList();
+                renderBottomBar();
+                
+                ImGui.EndPopup();
+            }
         }
 
         private void invalidateFileList()
@@ -178,7 +189,8 @@ namespace JsonAnything.GUI.GUIComponents
                     if (ImGui.Selectable($"{FontAwesome5.Folder} {dir}", _selectedFile == i, SelectableFlags.AllowDoubleClick))
                     {
                         _selectedFile = i;
-                        _bottomBarText = dir;
+
+                        if (Type == DialogType.Open) _bottomBarText = dir;
 
                         if (ImGui.IsMouseDoubleClicked(0))
                         {
@@ -198,7 +210,9 @@ namespace JsonAnything.GUI.GUIComponents
                     if (ImGui.Selectable($"{FontAwesome5.File} {file}", _selectedFile == i, SelectableFlags.AllowDoubleClick))
                     {
                         _selectedFile = i;
-                        _bottomBarText = file;
+
+                        _bottomBarText = Path.GetFileNameWithoutExtension(file);
+
                         FilePath = Path.Combine(_currentDir, file);
 
                         if (ImGui.IsMouseDoubleClicked(0))
@@ -217,8 +231,10 @@ namespace JsonAnything.GUI.GUIComponents
 
         private void renderBottomBar()
         {
-            ImGui.PushItemWidth(-50);
+            ImGui.PushItemWidth(-48 - (_fileSaveType.Length * 7) - 16);
             ImGuiNETExtensions.InputText("##bottombar", ref _bottomBarText);
+            ImGui.SameLine();
+            ImGui.Text(_fileSaveType);
             ImGui.SameLine();
             if (Type == DialogType.Open)
             {
@@ -241,6 +257,7 @@ namespace JsonAnything.GUI.GUIComponents
             {
                 if (ImGui.Button("Save", new Vector2(48, 0)))
                 {
+                    FilePath = Path.Combine(_currentDir, _bottomBarText + _fileSaveType);
                     dialogAccept();
                 }
             }
@@ -248,7 +265,7 @@ namespace JsonAnything.GUI.GUIComponents
 
         private void dialogAccept()
         {
-            OnDialogAccept(FilePath);
+            OnDialogAccept?.Invoke(FilePath);
             _open = false;
         }
     }

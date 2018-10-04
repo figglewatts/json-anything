@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -38,6 +39,21 @@ namespace JsonAnything.Util
                     ImGuiNative.ImFontAtlas_AddFontFromFileTTF(atlasPtr, fileName, pixelSize, cfgPtr, glyphPtr);
                 return new Font(fontPtr);
             }
+        }
+
+        public static float CalcTextWidth(string text)
+        {
+            byte[] textArray = new byte[text.Length];
+            Encoding.Default.GetBytes(text, 0, text.Length, textArray, 0);
+            unsafe
+            {
+                fixed (byte* textPtr = textArray)
+                {
+                    ImGuiNative.igCalcTextSize(out Vector2 size, (char*)textPtr, (char*)textPtr + text.Length, false, 50);
+                    return size.X;
+                }
+            }
+            
         }
     }
 }

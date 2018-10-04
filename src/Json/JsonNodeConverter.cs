@@ -11,7 +11,64 @@ namespace JsonAnything.Json
 {
     public class JsonNodeConverter : JsonConverter<JsonNode>
     {
-        public override void WriteJson(JsonWriter writer, JsonNode value, JsonSerializer serializer) { throw new NotImplementedException(); }
+        public override void WriteJson(JsonWriter writer, JsonNode value, JsonSerializer serializer)
+        {
+            switch (value.Type)
+            {
+                case NodeType.Null:
+                {
+                    writer.WriteNull();
+                    break;
+                }
+                case NodeType.Array:
+                {
+                    writer.WriteStartArray();
+
+                    foreach (var elem in value.AsList)
+                    {
+                        WriteJson(writer, elem, serializer);
+                    }
+
+                    writer.WriteEndArray();
+
+                    break;
+                }
+                case NodeType.Bool:
+                {
+                    writer.WriteValue(value.AsBool);
+                    break;
+                }
+                case NodeType.Float:
+                {
+                    writer.WriteValue(value.AsFloat);
+                    break;
+                }
+                case NodeType.Int:
+                {
+                    writer.WriteValue(value.AsInt);
+                    break;
+                }
+                case NodeType.Object:
+                {
+                    writer.WriteStartObject();
+
+                    foreach (KeyValuePair<string, JsonNode> kv in value.AsDictionary)
+                    {
+                        writer.WritePropertyName(kv.Key);
+                        WriteJson(writer, kv.Value, serializer);
+                    }
+
+                    writer.WriteEndObject();
+
+                    break;
+                }
+                case NodeType.String:
+                {
+                    writer.WriteValue(value.AsString);
+                    break;
+                }
+            }
+        }
 
         public override JsonNode ReadJson(JsonReader reader,
             Type objectType,

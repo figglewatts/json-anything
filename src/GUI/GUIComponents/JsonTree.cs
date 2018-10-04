@@ -22,6 +22,7 @@ namespace JsonAnything.GUI.GUIComponents
 
         public JsonTree()
         {
+            _jsonSerializer.Formatting = Formatting.Indented;
             _jsonSerializer.Converters.Add(new JsonNodeConverter());
         }
 
@@ -32,6 +33,15 @@ namespace JsonAnything.GUI.GUIComponents
             using (JsonReader jr = new JsonTextReader(sr))
             {
                 _json = _jsonSerializer.Deserialize<Dictionary<string, JsonNode>>(jr);
+            }
+        }
+
+        public void SaveJson(string filePath)
+        {
+            using (StreamWriter sw = new StreamWriter(filePath))
+            using (JsonWriter jw = new JsonTextWriter(sw))
+            {
+                _jsonSerializer.Serialize(jw, _json);
             }
         }
         

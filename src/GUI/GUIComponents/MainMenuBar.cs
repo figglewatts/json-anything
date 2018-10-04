@@ -9,14 +9,17 @@ namespace JsonAnything.GUI.GUIComponents
 {
     public class MainMenuBar : IImGuiComponent
     {
-        private FileDialog _openDialog;
+        private readonly FileDialog _openDialog;
+        private readonly FileDialog _saveDialog;
         private JsonTree _jsonTree;
 
         private bool _openFileOpenDialog = false;
+        private bool _openFileSaveDialog = false;
 
         public MainMenuBar(JsonTree jsonTree)
         {
             _openDialog = new FileDialog("", FileDialog.DialogType.Open);
+            _saveDialog = new FileDialog("", FileDialog.DialogType.Save);
             _jsonTree = jsonTree;
         }
         
@@ -49,8 +52,14 @@ namespace JsonAnything.GUI.GUIComponents
                 _openDialog.Show(fileName => _jsonTree.LoadJson(fileName), "*.json");
                 _openFileOpenDialog = false;
             }
-
             _openDialog.Render();
+
+            if (_openFileSaveDialog)
+            {
+                _saveDialog.Show(fileName => _jsonTree.SaveJson(fileName), "*", ".json");
+                _openFileSaveDialog = false;
+            }
+            _saveDialog.Render();
         }
 
         private void renderFileMenu()
@@ -73,7 +82,10 @@ namespace JsonAnything.GUI.GUIComponents
 
             if (ImGui.MenuItem("Save", "Ctrl+S")) {}
 
-            if (ImGui.MenuItem("Save As...", "Ctrl+Shift+S")) {}
+            if (ImGui.MenuItem("Save As...", "Ctrl+Shift+S"))
+            {
+                _openFileSaveDialog = true;
+            }
         }
 
         private void renderEditMenu()
