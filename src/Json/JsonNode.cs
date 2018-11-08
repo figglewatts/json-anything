@@ -1,20 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 
 namespace JsonAnything.Json
 {
     public class JsonNode : IList<JsonNode>, IDictionary<string, JsonNode>
     {
         private object _internalValue;
-        private int _count;
-        private bool _isReadOnly;
 
-        public NodeType Type { get; private set; }
+        public NodeType Type { get; }
 
         public string AsString
         {
@@ -69,22 +63,22 @@ namespace JsonAnything.Json
 
         public static implicit operator JsonNode(double d)
         {
-            return new JsonNode(d, NodeType.Float);
+            return new JsonNode(d, NodeType.Number);
         }
 
         public static implicit operator JsonNode(float f)
         {
-            return new JsonNode(f, NodeType.Float);
+            return new JsonNode(f, NodeType.Number);
         }
 
         public static implicit operator JsonNode(int i)
         {
-            return new JsonNode(i, NodeType.Int);
+            return new JsonNode(i, NodeType.Integer);
         }
 
         public static implicit operator JsonNode(bool b)
         {
-            return new JsonNode(b, NodeType.Bool);
+            return new JsonNode(b, NodeType.Boolean);
         }
 
         public static implicit operator JsonNode(List<JsonNode> a)
@@ -185,6 +179,70 @@ namespace JsonAnything.Json
         {
             get => AsList[index];
             set => AsList[index] = value;
+        }
+
+        public override int GetHashCode()
+        {
+            switch (Type)
+            {
+                case NodeType.Array: return AsList.GetHashCode();
+                case NodeType.Object: return AsDictionary.GetHashCode();
+                case NodeType.Integer: return AsInt.GetHashCode();
+                case NodeType.Boolean: return AsBool.GetHashCode();
+                case NodeType.Null: return 0;
+                case NodeType.Number: return AsFloat.GetHashCode();
+                case NodeType.String: return AsString.GetHashCode();
+                default: return -1;
+            }
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (this == obj) return true;
+
+            if (!(obj is JsonNode item)) return false;
+
+            switch (Type)
+            {
+                case NodeType.Integer:
+                {
+                    if (item.Type == NodeType.Integer) return item.AsInt == AsInt;
+                    break;
+                }
+                case NodeType.Number:
+                {
+                    if (item.Type == NodeType.Number) return Math.Abs(item.AsFloat - AsFloat) < float.Epsilon;
+                    break;
+                }
+                case NodeType.Boolean:
+                {
+                    if (item.Type == NodeType.Boolean) return item.AsBool == AsBool;
+                    break;
+                }
+                case NodeType.Null:
+                {
+                    if (item.Type == NodeType.Null) return true;
+                    break;
+                }
+                case NodeType.String:
+                {
+                    if (item.Type == NodeType.String) return item.AsString.Equals(AsString);
+                    break;
+                }
+                case NodeType.Object:
+                {
+                    if (item.Type == NodeType.Object) return item.AsDictionary.Equals(AsDictionary);
+                    break;
+                }
+                case NodeType.Array:
+                {
+                    if (item.Type == NodeType.Array) return item.AsList.Equals(AsList);
+                    break;
+                }
+                default: return false;
+            }
+
+            return false;
         }
     }
 }

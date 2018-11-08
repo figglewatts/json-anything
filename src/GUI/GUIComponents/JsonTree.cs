@@ -9,6 +9,7 @@ using ImGuiNET;
 using JsonAnything.Json;
 using JsonAnything.Util;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Schema;
 
 namespace JsonAnything.GUI.GUIComponents
 {
@@ -20,6 +21,8 @@ namespace JsonAnything.GUI.GUIComponents
         private bool _rootTreeOpen = true;
         private string _jsonFileName = "";
 
+        private JSchema _schema;
+
         public JsonTree()
         {
             _jsonSerializer.Formatting = Formatting.Indented;
@@ -28,6 +31,8 @@ namespace JsonAnything.GUI.GUIComponents
 
         public void LoadJson(string filePath)
         {
+            // TODO: exception checking
+            
             _jsonFileName = filePath;
             using (StreamReader sr = new StreamReader(filePath))
             using (JsonReader jr = new JsonTextReader(sr))
@@ -38,6 +43,8 @@ namespace JsonAnything.GUI.GUIComponents
 
         public void SaveJson(string filePath)
         {
+            // TODO: exception checking
+            
             using (StreamWriter sw = new StreamWriter(filePath))
             using (JsonWriter jw = new JsonTextWriter(sw))
             {
@@ -74,6 +81,18 @@ namespace JsonAnything.GUI.GUIComponents
             ImGui.Separator();
         }
 
+        public void LoadSchema(string schemaFilePath)
+        {
+            // TODO: exception checking
+            // TODO: logic here for loading a schema with a JSON file already loaded
+            
+            using (StreamReader sr = new StreamReader(schemaFilePath))
+            using (JsonReader jr = new JsonTextReader(sr))
+            {
+                _schema = JSchema.Load(jr);
+            }
+        }
+
         private void renderSwitch(string key, JsonNode node)
         {
             switch (node.Type)
@@ -83,17 +102,17 @@ namespace JsonAnything.GUI.GUIComponents
                     renderString(key, node);
                     break;
                 }
-                case NodeType.Float:
+                case NodeType.Number:
                 {
                     renderFloat(key, node);
                     break;
                 }
-                case NodeType.Int:
+                case NodeType.Integer:
                 {
                     renderInt(key, node);
                     break;
                 }
-                case NodeType.Bool:
+                case NodeType.Boolean:
                 {
                     renderBool(key, node);
                     break;

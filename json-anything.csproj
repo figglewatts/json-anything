@@ -50,12 +50,14 @@
     <Compile Include="src\GUI\GUIComponents\IImGuiComponent.cs" />
     <Compile Include="src\GUI\GUIComponents\JsonTree.cs" />
     <Compile Include="src\GUI\GUIComponents\MainMenuBar.cs" />
+    <Compile Include="src\GUI\GUIComponents\SchemaEditor.cs" />
     <Compile Include="src\GUI\ImGuiRenderer.cs" />
     <Compile Include="src\Json\JsonNode.cs" />
     <Compile Include="src\Json\JsonNodeConverter.cs" />
     <Compile Include="src\Json\NodeType.cs" />
     <Compile Include="src\MainWindow.cs" />
     <Compile Include="src\Program.cs" />
+    <Compile Include="src\Util\Extensions.cs" />
     <Compile Include="src\Util\ImGuiNETExtensions.cs" />
     <Compile Include="src\Util\Logger.cs" />
     <Compile Include="src\Util\TypeSwitch.cs" />
@@ -67,6 +69,9 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json.Schema, Version=3.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.Schema.3.0.10\lib\net45\Newtonsoft.Json.Schema.dll</HintPath>
     </Reference>
     <Reference Include="OpenTK, Version=3.0.1.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <HintPath>packages\OpenTK.3.0.1\lib\net20\OpenTK.dll</HintPath>

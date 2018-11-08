@@ -10,15 +10,18 @@ namespace JsonAnything.GUI.GUIComponents
     public class MainMenuBar : IImGuiComponent
     {
         private readonly FileDialog _openDialog;
+        private readonly FileDialog _openSchemaDialog;
         private readonly FileDialog _saveDialog;
         private JsonTree _jsonTree;
 
         private bool _openFileOpenDialog = false;
         private bool _openFileSaveDialog = false;
+        private bool _openSchemaOpenDialog = false;
 
         public MainMenuBar(JsonTree jsonTree)
         {
             _openDialog = new FileDialog("", FileDialog.DialogType.Open);
+            _openSchemaDialog = new FileDialog("", FileDialog.DialogType.Open);
             _saveDialog = new FileDialog("", FileDialog.DialogType.Save);
             _jsonTree = jsonTree;
         }
@@ -52,21 +55,29 @@ namespace JsonAnything.GUI.GUIComponents
                 _openDialog.Show(fileName => _jsonTree.LoadJson(fileName), "*.json");
                 _openFileOpenDialog = false;
             }
-            _openDialog.Render();
 
             if (_openFileSaveDialog)
             {
                 _saveDialog.Show(fileName => _jsonTree.SaveJson(fileName), "*", ".json");
                 _openFileSaveDialog = false;
             }
+
+            if (_openSchemaOpenDialog)
+            {
+                _openSchemaDialog.Show(fileName => _jsonTree.LoadSchema(fileName), "*.json");
+                _openSchemaOpenDialog = false;
+            }
+
+            _openDialog.Render();
+            _openSchemaDialog.Render();
             _saveDialog.Render();
         }
 
         private void renderFileMenu()
         {
-            if (ImGui.MenuItem("New", "Ctrl+N")) {}
+            if (ImGui.MenuItem("New")) {}
 
-            if (ImGui.MenuItem("Open", "Ctrl+O"))
+            if (ImGui.MenuItem("Open"))
             {
                 _openFileOpenDialog = true;
             }
@@ -80,9 +91,16 @@ namespace JsonAnything.GUI.GUIComponents
 
             ImGui.Separator();
 
-            if (ImGui.MenuItem("Save", "Ctrl+S")) {}
+            if (ImGui.MenuItem("Load schema"))
+            {
+                _openSchemaOpenDialog = true;
+            }
 
-            if (ImGui.MenuItem("Save As...", "Ctrl+Shift+S"))
+            ImGui.Separator();
+
+            if (ImGui.MenuItem("Save")) {}
+
+            if (ImGui.MenuItem("Save As..."))
             {
                 _openFileSaveDialog = true;
             }
@@ -90,19 +108,19 @@ namespace JsonAnything.GUI.GUIComponents
 
         private void renderEditMenu()
         {
-            if (ImGui.MenuItem("Undo", "Ctrl+Z")) {}
+            if (ImGui.MenuItem("Undo")) {}
 
-            if (ImGui.MenuItem("Redo", "Ctrl+Y")) {}
+            if (ImGui.MenuItem("Redo")) {}
 
             ImGui.Separator();
 
-            if (ImGui.MenuItem("Cut", "Ctrl+X")) {}
+            if (ImGui.MenuItem("Cut")) {}
 
-            if (ImGui.MenuItem("Copy", "Ctrl+C")) {}
+            if (ImGui.MenuItem("Copy")) {}
 
-            if (ImGui.MenuItem("Paste", "Ctrl+V")) {}
+            if (ImGui.MenuItem("Paste")) {}
 
-            if (ImGui.MenuItem("Select All", "Ctrl+A")) {}
+            if (ImGui.MenuItem("Select All")) {}
         }
 
         private void renderHelpMenu()

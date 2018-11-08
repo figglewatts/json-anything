@@ -33,17 +33,17 @@ namespace JsonAnything.Json
 
                     break;
                 }
-                case NodeType.Bool:
+                case NodeType.Boolean:
                 {
                     writer.WriteValue(value.AsBool);
                     break;
                 }
-                case NodeType.Float:
+                case NodeType.Number:
                 {
                     writer.WriteValue(value.AsFloat);
                     break;
                 }
-                case NodeType.Int:
+                case NodeType.Integer:
                 {
                     writer.WriteValue(value.AsInt);
                     break;

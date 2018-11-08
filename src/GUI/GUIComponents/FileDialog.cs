@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Configuration;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,6 +35,7 @@ namespace JsonAnything.GUI.GUIComponents
         private string _fileSaveType = "";
         private string _fileSearchPattern = "*";
         private bool _open = true;
+        private bool _lastOpen = false;
         private string _currentDir;
         private int _selectedFile = -1;
         private string _bottomBarText = "";
@@ -59,12 +61,14 @@ namespace JsonAnything.GUI.GUIComponents
             _fileSaveType = fileSaveType;
             FilePath = "";
             invalidateFileList();
-            ImGui.OpenPopup(Type == DialogType.Open ? "Open file..." : "Save file...");
+            ImGui.OpenPopup(Type == DialogType.Open ? $"Open file...##{GetHashCode()}" : $"Save file...##{GetHashCode()}");
             _open = true;
         }
         
         public void Render()
         {
+            _lastOpen = _open;
+            
             if (Type == DialogType.Open)
             {
                 renderFileOpenDialog();
@@ -73,12 +77,28 @@ namespace JsonAnything.GUI.GUIComponents
             {
                 renderFileSaveDialog();
             }
+
+            if (_open == false && _lastOpen == true)
+            {
+                resetDefaults();
+            }
+        }
+
+        private void resetDefaults()
+        {
+            OnDialogAccept = null;
+            _fileSearchPattern = "";
+            _fileSaveType = "";
+            FilePath = "";
+            _currentDir = Directory.GetCurrentDirectory();
+            _directoriesInCurrentDir.Clear();
+            _filesInCurrentDir.Clear();
         }
 
         private void renderFileOpenDialog()
         {
             ImGui.SetNextWindowSize(_dialogStartSize, Condition.FirstUseEver);
-            if (ImGui.BeginPopupModal("Open file...", ref _open))
+            if (ImGui.BeginPopupModal($"Open file...##{GetHashCode()}", ref _open))
             {
                 renderTopBar();
                 renderFileList();
@@ -91,7 +111,7 @@ namespace JsonAnything.GUI.GUIComponents
         private void renderFileSaveDialog()
         {
             ImGui.SetNextWindowSize(_dialogStartSize, Condition.FirstUseEver);
-            if (ImGui.BeginPopupModal("Save file...", ref _open))
+            if (ImGui.BeginPopupModal($"Save file...##{GetHashCode()}", ref _open))
             {
                 renderTopBar();
                 renderFileList();
@@ -231,10 +251,23 @@ namespace JsonAnything.GUI.GUIComponents
 
         private void renderBottomBar()
         {
-            ImGui.PushItemWidth(-48 - (_fileSaveType.Length * 7) - 16);
+            if (Type == DialogType.Save)
+            {
+                ImGui.PushItemWidth(-48 - (_fileSaveType.Length * 7) - 16);
+            }
+            else
+            {
+                ImGui.PushItemWidth(-48 - 9);
+            }
+
             ImGuiNETExtensions.InputText("##bottombar", ref _bottomBarText);
-            ImGui.SameLine();
-            ImGui.Text(_fileSaveType);
+            
+            if (Type == DialogType.Save)
+            {
+                ImGui.SameLine();
+                ImGui.Text(_fileSaveType);
+            }
+
             ImGui.SameLine();
             if (Type == DialogType.Open)
             {
