@@ -90,6 +90,11 @@ namespace JsonAnything.GUI.GUIComponents
             using (JsonReader jr = new JsonTextReader(sr))
             {
                 _schema = JSchema.Load(jr);
+                if (_schema.SchemaVersion == null)
+                {
+                    // schema is not a valid JSON schema
+                    throw new JSchemaValidationException("Invalid JSON schema, schema needs $schema tag!");
+                }
             }
         }
 
