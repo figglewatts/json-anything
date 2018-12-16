@@ -25,7 +25,7 @@ namespace JsonAnything
         private const int GL_MAJOR_VERSION = 4;
         private const int GL_MINOR_VERSION = 0;
 
-        private List<IImGuiComponent> _guiComponents;
+        private List<ImGuiComponent> _guiComponents;
         
         public MainWindow()
             : base(WINDOW_WIDTH, WINDOW_HEIGHT,
@@ -38,13 +38,15 @@ namespace JsonAnything
         {
             ImGuiRenderer.Init();
             
-            _guiComponents = new List<IImGuiComponent>();
+            _guiComponents = new List<ImGuiComponent>();
 
-            ApplicationArea applicationArea = new ApplicationArea();
+            ApplicationArea applicationArea = new ApplicationArea(this);
 
-            _guiComponents.Add(new MainMenuBar(applicationArea.JsonTree));
+            _guiComponents.Add(new MainMenuBar(applicationArea.JsonTree, this));
             _guiComponents.Add(applicationArea);
         }
+
+        public void SetTitle(string title) { this.Title = title + " - " + WINDOW_TITLE; }
 
         protected override void OnResize(EventArgs e)
         {

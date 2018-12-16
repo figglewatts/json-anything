@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Configuration;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using IconFonts;
 using ImGuiNET;
 using JsonAnything.Util;
+using OpenTK;
+using Vector2 = System.Numerics.Vector2;
 
 namespace JsonAnything.GUI.GUIComponents
 {
-    public class FileDialog : IImGuiComponent
+    public class FileDialog : ImGuiComponent
     {
         public enum DialogType
         {
@@ -44,7 +45,8 @@ namespace JsonAnything.GUI.GUIComponents
         private readonly List<string> _filesInCurrentDir;
         private event Action<string> OnDialogAccept;
 
-        public FileDialog(string dir, DialogType type)
+        public FileDialog(string dir, DialogType type, MainWindow window)
+            : base(window)
         {
             FilePath = dir;
             Type = type;
@@ -65,7 +67,7 @@ namespace JsonAnything.GUI.GUIComponents
             _open = true;
         }
         
-        public void Render()
+        public override void Render()
         {
             _lastOpen = _open;
             

@@ -1,14 +1,20 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using Newtonsoft.Json.Schema;
 
 namespace JsonAnything.Json
 {
     public class JsonNode : IList<JsonNode>, IDictionary<string, JsonNode>
     {
-        private object _internalValue;
+        private dynamic _internalValue;
 
         public NodeType Type { get; }
+
+        public string Key { get; set; }
+
+        public JSchema Schema { get; }
 
         public string AsString
         {
@@ -48,10 +54,11 @@ namespace JsonAnything.Json
             set => _internalValue = value;
         }
 
-        public JsonNode(object o, NodeType type)
+        public JsonNode(dynamic o, NodeType type, JSchema schema = null)
         {
             _internalValue = o;
             Type = type;
+            Schema = schema;
         }
 
         public static implicit operator JsonNode(string s)

@@ -108,9 +108,14 @@ namespace JsonAnything.Json
                 {
                     List<JsonNode> arr = new List<JsonNode>();
 
+                    int i = 0;
                     foreach (JToken t in j)
                     {
-                        arr.Add(Convert(t));
+                        JsonNode arrElement = Convert(t);
+                        arrElement.Key = i.ToString();
+                        arr.Add(arrElement);
+
+                        i++;
                     }
 
                     return arr;
@@ -122,6 +127,7 @@ namespace JsonAnything.Json
                     foreach (JProperty p in j.Children<JProperty>())
                     {
                         obj[p.Name] = Convert(p.Value);
+                        obj[p.Name].Key = p.Name;
                     }
 
                     return obj;

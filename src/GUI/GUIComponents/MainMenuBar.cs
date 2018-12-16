@@ -4,29 +4,31 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ImGuiNET;
+using OpenTK;
 
 namespace JsonAnything.GUI.GUIComponents
 {
-    public class MainMenuBar : IImGuiComponent
+    public class MainMenuBar : ImGuiComponent
     {
         private readonly FileDialog _openDialog;
         private readonly FileDialog _openSchemaDialog;
         private readonly FileDialog _saveDialog;
-        private JsonTree _jsonTree;
+        private readonly JsonTree _jsonTree;
 
         private bool _openFileOpenDialog = false;
         private bool _openFileSaveDialog = false;
         private bool _openSchemaOpenDialog = false;
 
-        public MainMenuBar(JsonTree jsonTree)
+        public MainMenuBar(JsonTree jsonTree, MainWindow window)
+            : base(window)
         {
-            _openDialog = new FileDialog("", FileDialog.DialogType.Open);
-            _openSchemaDialog = new FileDialog("", FileDialog.DialogType.Open);
-            _saveDialog = new FileDialog("", FileDialog.DialogType.Save);
+            _openDialog = new FileDialog("", FileDialog.DialogType.Open, window);
+            _openSchemaDialog = new FileDialog("", FileDialog.DialogType.Open, window);
+            _saveDialog = new FileDialog("", FileDialog.DialogType.Save, window);
             _jsonTree = jsonTree;
         }
         
-        public void Render()
+        public override void Render()
         {
             if (ImGui.BeginMainMenuBar())
             {
@@ -71,11 +73,16 @@ namespace JsonAnything.GUI.GUIComponents
             _openDialog.Render();
             _openSchemaDialog.Render();
             _saveDialog.Render();
+
+            renderModals();
         }
 
         private void renderFileMenu()
         {
-            if (ImGui.MenuItem("New")) {}
+            if (ImGui.MenuItem("New"))
+            {
+                createModal("Test modal", new InfoDialog(InfoDialog.DialogType.Info, "Test message", _window));
+            }
 
             if (ImGui.MenuItem("Open"))
             {
@@ -94,6 +101,11 @@ namespace JsonAnything.GUI.GUIComponents
             if (ImGui.MenuItem("Load schema"))
             {
                 _openSchemaOpenDialog = true;
+            }
+
+            if (ImGui.MenuItem("Unload schema"))
+            {
+                // TODO: dialog for "are you sure you want to unload?"
             }
 
             ImGui.Separator();
