@@ -86,23 +86,23 @@ namespace JsonAnything.Json
             {
                 case JTokenType.String:
                 {
-                    return j.Value<string>();
+                    return new JsonNode(j.Value<string>(), NodeType.String, j);
                 }
                 case JTokenType.Boolean:
                 {
-                    return j.Value<bool>();
+                    return new JsonNode(j.Value<bool>(), NodeType.Boolean, j);
                 }
                 case JTokenType.Float:
                 {
-                    return j.Value<float>();
+                    return new JsonNode(j.Value<float>(), NodeType.Number, j);
                 }
                 case JTokenType.Integer:
                 {
-                    return j.Value<int>();
+                    return new JsonNode(j.Value<int>(), NodeType.Integer, j);
                 }
                 case JTokenType.Null:
                 {
-                    return new JsonNode(null, NodeType.Null);
+                    return new JsonNode(null, NodeType.Null, j);
                 }
                 case JTokenType.Array:
                 {
@@ -118,7 +118,7 @@ namespace JsonAnything.Json
                         i++;
                     }
 
-                    return arr;
+                    return new JsonNode(arr, NodeType.Array, j);
                 }
                 case JTokenType.Object:
                 {
@@ -130,7 +130,7 @@ namespace JsonAnything.Json
                         obj[p.Name].Key = p.Name;
                     }
 
-                    return obj;
+                    return new JsonNode(obj, NodeType.Object, j);
                 }
                 default:
                 {

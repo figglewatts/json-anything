@@ -6,11 +6,14 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using IconFonts;
 using ImGuiNET;
 using JsonAnything.Json;
 using JsonAnything.Util;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
+using NJsonSchema;
 using OpenTK;
 
 namespace JsonAnything.GUI.GUIComponents
@@ -23,8 +26,8 @@ namespace JsonAnything.GUI.GUIComponents
         private bool _rootTreeOpen = true;
         private string _jsonFileName = "";
 
-        private JSchema _schema;
-        private JSchemaUrlResolver _schemaUrlResolver;
+        private JsonSchema4 _schema;
+        private SchemaValidationEventHandler _validationEventHandler;
 
         // used for generating IDs
         private int _renderCount = 0;
@@ -34,7 +37,19 @@ namespace JsonAnything.GUI.GUIComponents
         {
             _jsonSerializer.Formatting = Formatting.Indented;
             _jsonSerializer.Converters.Add(new JsonNodeConverter());
-            _schemaUrlResolver = new JSchemaUrlResolver();
+            _validationEventHandler = (sender, args) =>
+            {
+                ImGui.PushStyleColor(ColorTarget.Text, new System.Numerics.Vector4(1, 0, 0, 1));
+                ImGui.SameLine(ImGui.GetColumnWidth(0) - 16 - ImGui.GetStyle().FramePadding.X);
+                ImGui.Text(FontAwesome5.ExclamationCircle);
+                if (ImGui.IsItemHovered(HoveredFlags.Default))
+                {
+                    ImGuiNative.igBeginTooltip();
+                    ImGui.Text(ValidationErrorStringConverter.Convert(args.ValidationErrors[0], args.Node));
+                    ImGuiNative.igEndTooltip();
+                }
+                ImGui.PopStyleColor();
+            };
         }
 
         public void LoadJson(string filePath)
@@ -90,17 +105,12 @@ namespace JsonAnything.GUI.GUIComponents
             // TODO: logic here for loading a schema with a JSON file already loaded
             
             using (StreamReader sr = new StreamReader(schemaFilePath))
-            using (JsonReader jr = new JsonTextReader(sr))
             {
-                _schema = JSchema.Load(jr, new JSchemaReaderSettings
-                {
-                    Resolver = _schemaUrlResolver,
-                    BaseUri = new Uri(schemaFilePath)
-                });
+                _schema = JsonSchema4.FromJsonAsync(sr.ReadToEnd()).Result;
                 if (_schema.SchemaVersion == null)
                 {
                     // schema is not a valid JSON schema
-                    throw new JSchemaValidationException("Invalid JSON schema, schema needs $schema tag!");
+                    throw new JsonException("Invalid JSON schema, schema needs $schema tag!");
                 }
             }
 
@@ -112,72 +122,69 @@ namespace JsonAnything.GUI.GUIComponents
 
         }
 
-        private JsonNode createJsonFromSchema(JSchema schema)
+        private JsonNode createJsonFromSchema(JsonSchema4 schema)
         {
             // TODO: more comprehensive schema stuff like default values
-            
-            if (schema.Type != null)
+
+            JsonObjectType type = schema.Type;
+            int typeFlags = (int)type;
+
+            if (type.HasFlag(JsonObjectType.Boolean))
             {
-                JSchemaType type = schema.Type.Value;
-                int typeFlags = (int)type;
-
-                if (type.HasFlag(JSchemaType.Boolean))
-                {
-                    return new JsonNode(false, NodeType.Boolean, schema);
-                }
-                if (type.HasFlag(JSchemaType.Integer))
-                {
-                    return new JsonNode(0, NodeType.Integer, schema);
-                }
-                if (type.HasFlag(JSchemaType.Number))
-                {
-                    return new JsonNode(0, NodeType.Number, schema);
-                }
-                if (type.HasFlag(JSchemaType.Null))
-                {
-                    return new JsonNode(null, NodeType.Null, schema);
-                }
-
-                if (type.HasFlag(JSchemaType.String))
-                {
-                    return new JsonNode("", NodeType.String, schema);
-                }
-
-                if (type.HasFlag(JSchemaType.Array))
-                {
-                    // TODO: "contains" keyword
-                    // TODO: "minItems" "maxItems" keyword
-                    // TODO: "uniqueItems" keyword
-                        
-                    List<JsonNode> array = new List<JsonNode>();
-
-                    if (schema.Items.Count == 1)
-                    {
-                        array.Add(createJsonFromSchema(schema.Items[0]));
-                    }
-                    else
-                    {
-                        array.AddRange(schema.Items.Select(createJsonFromSchema));
-                    }
-
-                    return new JsonNode(array, NodeType.Array, schema);
-                }
-
-                if (type.HasFlag(JSchemaType.Object))
-                {
-                    // TODO: "minProperties" keyword
-                        
-                    Dictionary<string, JsonNode> obj = new Dictionary<string, JsonNode>();
-
-                    foreach (KeyValuePair<string, JSchema> property in schema.Properties)
-                    {
-                        obj[property.Key] = createJsonFromSchema(property.Value);
-                    }
-
-                    return new JsonNode(obj, NodeType.Object, schema);
-                }
+                return new JsonNode(false, NodeType.Boolean, new JValue(false), schema);
             }
-            return new JsonNode("", NodeType.String, schema);
+            if (type.HasFlag(JsonObjectType.Integer))
+            {
+                return new JsonNode(0, NodeType.Integer, new JValue(0L), schema);
+            }
+            if (type.HasFlag(JsonObjectType.Number))
+            {
+                return new JsonNode(0, NodeType.Number, new JValue(0F), schema);
+            }
+            if (type.HasFlag(JsonObjectType.Null))
+            {
+                return new JsonNode(null, NodeType.Null, new JValue(new object()), schema);
+            }
+
+            if (type.HasFlag(JsonObjectType.String))
+            {
+                return new JsonNode("", NodeType.String, new JValue(""), schema);
+            }
+
+            if (type.HasFlag(JsonObjectType.Array))
+            {
+                // TODO: "contains" keyword
+                // TODO: "minItems" "maxItems" keyword
+                // TODO: "uniqueItems" keyword
+                        
+                List<JsonNode> array = new List<JsonNode>();
+                if (schema.Items.Count == 1)
+                {
+                    array.Add(createJsonFromSchema(schema.Item));
+                }
+                else
+                {
+                    array.AddRange(schema.Items.Select(createJsonFromSchema));
+                }
+
+                return new JsonNode(array, NodeType.Array, new JArray(array), schema);
+            }
+
+            if (type.HasFlag(JsonObjectType.Object))
+            {
+                // TODO: "minProperties" keyword
+                        
+                Dictionary<string, JsonNode> obj = new Dictionary<string, JsonNode>();
+
+                foreach (KeyValuePair<string, JsonProperty> property in schema.Properties)
+                {
+                    obj[property.Key] = createJsonFromSchema(property.Value);
+                }
+
+                return new JsonNode(obj, NodeType.Object, new JObject(obj), schema);
+            }
+
+            return new JsonNode(null, NodeType.Null, new JValue(new object()), schema);
         }
 
         private void renderNode(JsonNode node)
@@ -240,6 +247,10 @@ namespace JsonAnything.GUI.GUIComponents
             ImGuiNETExtensions.InputText($"##{_renderCount}", ref s);
             ImGui.PopItemWidth();
             ImGui.NextColumn();
+            if (node.Schema != null && !node.AsString.Equals(s))
+            {
+                //node.Token.Validate(node.Schema, _validationEventHandler);
+            }
             node.AsString = s;
             _renderCount++;
         }
@@ -255,6 +266,7 @@ namespace JsonAnything.GUI.GUIComponents
             ImGui.DragFloat($"##{_renderCount}", ref f, float.MinValue, float.MaxValue, 0.01f, "%.4f");
             ImGui.PopItemWidth();
             ImGui.NextColumn();
+            //if (Math.Abs(node.AsFloat - f) > float.Epsilon) _jsonDirty = true;
             node.AsFloat = f;
             _renderCount++;
         }
@@ -265,11 +277,13 @@ namespace JsonAnything.GUI.GUIComponents
             string key = node.Key ?? "int";
             int i = node.AsInt;
             ImGui.Text(key);
+            node.Validate(_validationEventHandler);
             ImGui.NextColumn();
             ImGui.PushItemWidth(-1);
             ImGui.DragInt($"##{_renderCount}", ref i, 1.0f, int.MinValue, int.MaxValue, i.ToString());
             ImGui.PopItemWidth();
             ImGui.NextColumn();
+            //if (node.Schema != null) node.Token.Validate(node.Schema, _validationEventHandler);
             node.AsInt = i;
             _renderCount++;
         }

@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
+using NJsonSchema;
+using NJsonSchema.Validation;
 
 namespace JsonAnything.Json
 {
@@ -14,7 +18,9 @@ namespace JsonAnything.Json
 
         public string Key { get; set; }
 
-        public JSchema Schema { get; }
+        public JsonSchema4 Schema { get; }
+
+        public JToken Token { get; private set; }
 
         public string AsString
         {
@@ -31,7 +37,11 @@ namespace JsonAnything.Json
         public int AsInt
         {
             get => (int)_internalValue;
-            set => _internalValue = value;
+            set
+            {
+                _internalValue = value;
+                Token = new JValue(value);
+            }
         }
 
         public bool AsBool
@@ -54,49 +64,15 @@ namespace JsonAnything.Json
             set => _internalValue = value;
         }
 
-        public JsonNode(dynamic o, NodeType type, JSchema schema = null)
+        public JsonNode(dynamic o, NodeType type, JToken token = null, JsonSchema4 schema = null)
         {
             _internalValue = o;
             Type = type;
             Schema = schema;
-        }
-
-        public static implicit operator JsonNode(string s)
-        {
-            return new JsonNode(s, NodeType.String);
+            Token = token;
         }
 
         public static implicit operator string(JsonNode node) { return node.AsString; }
-
-        public static implicit operator JsonNode(double d)
-        {
-            return new JsonNode(d, NodeType.Number);
-        }
-
-        public static implicit operator JsonNode(float f)
-        {
-            return new JsonNode(f, NodeType.Number);
-        }
-
-        public static implicit operator JsonNode(int i)
-        {
-            return new JsonNode(i, NodeType.Integer);
-        }
-
-        public static implicit operator JsonNode(bool b)
-        {
-            return new JsonNode(b, NodeType.Boolean);
-        }
-
-        public static implicit operator JsonNode(List<JsonNode> a)
-        {
-            return new JsonNode(a, NodeType.Array);
-        }
-
-        public static implicit operator JsonNode(Dictionary<string, JsonNode> o)
-        {
-            return new JsonNode(o, NodeType.Object);
-        }
 
         public IEnumerator<JsonNode> GetEnumerator() { return AsList.GetEnumerator(); }
 
@@ -186,6 +162,14 @@ namespace JsonAnything.Json
         {
             get => AsList[index];
             set => AsList[index] = value;
+        }
+
+        public void Validate(SchemaValidationEventHandler handler)
+        {
+            if (Schema == null || Token == null) throw new JsonValidationException("Cannot validate a node with no Schema or Token");
+
+            List<ValidationError> errors = Schema.Validate(Token).ToList();
+            if (errors.Count > 0) handler(this, new SchemaValidationEventArgs(errors, this));
         }
 
         public override int GetHashCode()
